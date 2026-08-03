@@ -84,44 +84,81 @@ def plan_device(name: str = "auto", amp: bool = True) -> DevicePlan:
 
 
 class BucketBatchSampler(Sampler[list[int]]):
-    """Shuffle, chunk into pools, sort each pool by width, emit batches.
+    """Width-bucketed batching with a constant *pixel* budget per batch.
 
-    Deterministic given the seed and epoch. Batch *order* is shuffled so the
-    model does not systematically see short words before long ones.
+    Holding the sample count constant is what makes bucketing dangerous: the
+    sampler sorts by width, so the widest bucket receives a full batch of
+    near-maximum-width crops while the narrowest receives a full batch of tiny
+    ones. Activation memory scales with ``count x width``, so the widest batch
+    can be several times the median. That is exactly how the first full run died
+    — 128 samples x ~512 px allocated 15.07 GiB and OOM'd MPS at epoch 6, and a
+    16 GB T4 would have gone the same way.
+
+    So the budget is ``batch_size x reference_width`` pixels, and each batch
+    takes as many samples as fit under it. Wide batches get fewer samples, narrow
+    batches get more. Peak memory becomes roughly flat across buckets, and
+    throughput improves as a side effect because narrow batches stop being
+    padded out to a fixed small count.
     """
 
     def __init__(self, widths: list[int], batch_size: int, seed: int = 1337,
-                 pool_multiplier: int = 20, drop_last: bool = False):
+                 pool_multiplier: int = 20, drop_last: bool = False,
+                 max_batch_size: int | None = None):
         self.widths = np.asarray(widths)
         self.batch_size = batch_size
         self.seed = seed
         self.pool = batch_size * pool_multiplier
         self.drop_last = drop_last
+        # Reference width = median, so the budget matches what a fixed batch of
+        # `batch_size` typical samples would have used.
+        self.reference_width = max(1, int(np.median(self.widths)))
+        self.pixel_budget = batch_size * self.reference_width
+        # Never exceed 2x the nominal count, or a batch of very narrow crops
+        # could balloon enough to hurt gradient-noise scale.
+        self.max_batch_size = max_batch_size or batch_size * 2
         self.epoch = 0
+        self._cached: list[list[int]] | None = None
 
     def set_epoch(self, epoch: int) -> None:
         self.epoch = epoch
+        self._cached = None
 
-    def __iter__(self):
+    def _build(self) -> list[list[int]]:
+        if self._cached is not None:
+            return self._cached
         rng = np.random.default_rng(self.seed + self.epoch)
         order = rng.permutation(len(self.widths))
         batches: list[list[int]] = []
+
         for start in range(0, len(order), self.pool):
             pool = order[start:start + self.pool]
             pool = pool[np.argsort(self.widths[pool], kind="stable")]
-            for b in range(0, len(pool), self.batch_size):
-                batch = pool[b:b + self.batch_size].tolist()
-                if self.drop_last and len(batch) < self.batch_size:
-                    continue
+
+            batch: list[int] = []
+            widest = 0
+            for idx in pool.tolist():
+                w = int(self.widths[idx])
+                new_widest = max(widest, w)
+                # Would adding this sample blow the budget?
+                if batch and ((len(batch) + 1) * new_widest > self.pixel_budget
+                              or len(batch) + 1 > self.max_batch_size):
+                    batches.append(batch)
+                    batch, widest = [idx], w
+                else:
+                    batch.append(idx)
+                    widest = new_widest
+            if batch and not (self.drop_last and len(batch) < 2):
                 batches.append(batch)
-        for i in rng.permutation(len(batches)):
-            yield batches[i]
+
+        order2 = rng.permutation(len(batches))
+        self._cached = [batches[i] for i in order2]
+        return self._cached
+
+    def __iter__(self):
+        yield from self._build()
 
     def __len__(self) -> int:
-        n = len(self.widths)
-        if self.drop_last:
-            return n // self.batch_size
-        return (n + self.batch_size - 1) // self.batch_size
+        return len(self._build())
 
 
 # ---------------------------------------------------------------- training --
@@ -230,8 +267,13 @@ def main() -> None:
     ctc = nn.CTCLoss(blank=Charset.BLANK, zero_infinity=True)
     opt = torch.optim.AdamW(model.parameters(), lr=args.lr,
                             weight_decay=args.weight_decay, betas=(0.9, 0.98))
+    # Pixel-budget batching makes the per-epoch batch count vary slightly with
+    # the shuffle, so pad total_steps by 5%. OneCycleLR raises if stepped past
+    # total_steps, and losing a run at epoch 14 to a scheduler assertion would
+    # be an absurd way to fail.
+    total_steps = int(args.epochs * len(sampler) * 1.05) + 1
     sched = torch.optim.lr_scheduler.OneCycleLR(
-        opt, max_lr=args.lr, total_steps=args.epochs * len(sampler),
+        opt, max_lr=args.lr, total_steps=total_steps,
         pct_start=0.15, div_factor=25.0, final_div_factor=1000.0,
     )
 
@@ -274,7 +316,8 @@ def main() -> None:
             loss.backward()
             nn.utils.clip_grad_norm_(model.parameters(), args.grad_clip)
             opt.step()
-            sched.step()
+            if sched.last_epoch < total_steps - 1:
+                sched.step()
 
             running += loss.item()
             n_batches += 1
