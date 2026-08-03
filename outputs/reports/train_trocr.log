@@ -1,0 +1,23 @@
+Using a slow image processor as `use_fast` is unset and a slow processor was saved with this model. `use_fast=True` will be the default behavior in v4.52, even if the model was saved with a slow processor. This will result in minor differences in outputs. You'll still be able to use a slow processor with `use_fast=False`.
+Some weights of VisionEncoderDecoderModel were not initialized from the model checkpoint at microsoft/trocr-small-handwritten and are newly initialized: ['encoder.pooler.dense.bias', 'encoder.pooler.dense.weight']
+You should probably TRAIN this model on a down-stream task to be able to use it for predictions and inference.
+`loss_type=None` was set in the config but it is unrecognized. Using the default loss: `ForCausalLMLoss`.
+model       : microsoft/trocr-small-handwritten (62M params)
+device      : mps | amp fp16: False
+train/val   : 3000 / 300
+steps/epoch : 187 (batch 8 x accum 2)
+
+  e00 step     0/375 loss=11.5421 lr=2.00e-06
+  e00 step   100/375 loss=10.4361 lr=4.59e-05
+  e00 step   200/375 loss=9.8253 lr=3.88e-05
+  e00 step   300/375 loss=9.2896 lr=3.17e-05
+epoch 00 | loss 8.9780 | CER 96.46% | WER 100.00% | Exact  0.00% | n=300 | 417s | elapsed 7.0m
+  * new best val CER 96.4589% -> outputs/checkpoints/trocr_ft
+  projected total: 14 min for 2 epochs
+  e01 step     0/375 loss=8.1906 lr=2.65e-05
+  e01 step   100/375 loss=7.7795 lr=1.93e-05
+  e01 step   200/375 loss=7.6520 lr=1.22e-05
+  e01 step   300/375 loss=7.5579 lr=5.12e-06
+epoch 01 | loss 7.5198 | CER 100.00% | WER 100.00% | Exact  0.00% | n=300 | 397s | elapsed 13.6m
+
+done (completed) in 13.6 min | best val CER 96.4589%

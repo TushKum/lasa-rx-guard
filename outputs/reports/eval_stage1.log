@@ -1,0 +1,16 @@
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/Users/tushitkumar/lasa-rx-guard/src/lasa/evaluation/evaluate.py", line 249, in <module>
+    main()
+  File "/Users/tushitkumar/lasa-rx-guard/src/lasa/evaluation/evaluate.py", line 179, in main
+    refs, fonts, outs = eval_crnn_split(model, charset, samples, device,
+                        ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/tushitkumar/lasa-rx-guard/src/lasa/evaluation/evaluate.py", line 69, in eval_crnn_split
+    out["beam"].extend(beam_search_decode(lp, charset, il, beam_width=beam_width))
+                       ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/tushitkumar/lasa-rx-guard/.venv/lib/python3.12/site-packages/torch/utils/_contextlib.py", line 120, in decorate_context
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+TypeError: beam_search_decode() got multiple values for argument 'beam_width'
+CRNN  : 8,379,740 params | ckpt 100.6 MB | mps

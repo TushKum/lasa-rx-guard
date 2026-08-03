@@ -41,3 +41,60 @@ epoch 03 | loss 0.1156 | CER  4.63% | WER 27.87% | Exact 72.13% | n=3000 | 402s 
   e04 step  100/375 loss=0.0778 lr=9.39e-04
   e04 step  200/375 loss=0.0751 lr=9.23e-04
   e04 step  300/375 loss=0.0745 lr=9.04e-04
+epoch 04 | loss 0.0741 | CER  3.48% | WER 22.83% | Exact 77.17% | n=3000 | 476s | elapsed 42.8m
+  * new best val CER 3.4838% -> outputs/checkpoints/crnn_ctc/best.pt
+  e05 step    0/375 loss=0.0620 lr=8.89e-04
+  e05 step  100/375 loss=0.0524 lr=8.68e-04
+  e05 step  200/375 loss=0.0526 lr=8.45e-04
+  e05 step  300/375 loss=0.0521 lr=8.20e-04
+epoch 05 | loss 0.0518 | CER  2.50% | WER 16.70% | Exact 83.30% | n=3000 | 784s | elapsed 55.9m
+  * new best val CER 2.4957% -> outputs/checkpoints/crnn_ctc/best.pt
+  e06 step    0/375 loss=0.0293 lr=8.01e-04
+  e06 step  100/375 loss=0.0320 lr=7.74e-04
+  e06 step  200/375 loss=0.0350 lr=7.46e-04
+  e06 step  300/375 loss=0.0352 lr=7.17e-04
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/Users/tushitkumar/lasa-rx-guard/src/lasa/train/train_crnn.py", line 332, in <module>
+    main()
+  File "/Users/tushitkumar/lasa-rx-guard/src/lasa/train/train_crnn.py", line 287, in main
+    metrics, _, _ = evaluate(model, val_loader, charset, plan, args.val_batches)
+                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/tushitkumar/lasa-rx-guard/.venv/lib/python3.12/site-packages/torch/utils/_contextlib.py", line 120, in decorate_context
+    return func(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/tushitkumar/lasa-rx-guard/src/lasa/train/train_crnn.py", line 158, in evaluate
+    log_probs = model(batch["images"].to(plan.device)).cpu()
+                ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/tushitkumar/lasa-rx-guard/.venv/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1773, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/tushitkumar/lasa-rx-guard/.venv/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1784, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/tushitkumar/lasa-rx-guard/src/lasa/models/crnn.py", line 163, in forward
+    f = self.cnn(x)                       # [B, 512, 1, W/4]
+        ^^^^^^^^^^^
+  File "/Users/tushitkumar/lasa-rx-guard/.venv/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1773, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/tushitkumar/lasa-rx-guard/.venv/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1784, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/tushitkumar/lasa-rx-guard/.venv/lib/python3.12/site-packages/torch/nn/modules/container.py", line 244, in forward
+    input = module(input)
+            ^^^^^^^^^^^^^
+  File "/Users/tushitkumar/lasa-rx-guard/.venv/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1773, in _wrapped_call_impl
+    return self._call_impl(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/tushitkumar/lasa-rx-guard/.venv/lib/python3.12/site-packages/torch/nn/modules/module.py", line 1784, in _call_impl
+    return forward_call(*args, **kwargs)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/tushitkumar/lasa-rx-guard/.venv/lib/python3.12/site-packages/torch/nn/modules/conv.py", line 548, in forward
+    return self._conv_forward(input, self.weight, self.bias)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/Users/tushitkumar/lasa-rx-guard/.venv/lib/python3.12/site-packages/torch/nn/modules/conv.py", line 543, in _conv_forward
+    return F.conv2d(
+           ^^^^^^^^^
+RuntimeError: MPS backend out of memory (MPS allocated: 15.07 GiB, other allocations: 2.44 GiB, max allowed: 18.13 GiB). Tried to allocate 642.00 MiB on private pool. Use PYTORCH_MPS_HIGH_WATERMARK_RATIO=0.0 to disable upper limit for memory allocations (may cause system failure).

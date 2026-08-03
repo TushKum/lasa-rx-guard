@@ -1,0 +1,37 @@
+thresholds: red=0.8 yellow=0.78 margin=0.1
+corpus 2000 names | 164 documented pairs
+retrieval sample 400 | negatives 300 | k=5
+noise model: seeded, visual-confusion-biased, ~rate edits/char, ops sub(x3)/del/ins/swap
+
+### Top-k retrieval under simulated OCR noise
+
+| err/char | n | Top-1 | Top-3 | Top-5 |
+|---:|---:|---:|---:|---:|
+| 0.0 | 400 | 98.2% | 100.0% | 100.0% |
+| 0.1 | 400 | 99.0% | 100.0% | 100.0% |
+| 0.2 | 400 | 96.8% | 99.8% | 100.0% |
+| 0.3 | 400 | 88.5% | 97.5% | 99.8% |
+
+### LASA pair flagging vs ISMP/FDA ground truth
+
+| rule | err/char | TP | FN | FP | TN | Precision | Recall | F1 | FP-rate |
+|---|---:|---:|---:|---:|---:|---:|---:|---:|---:|
+| RED | 0.0 | 47 | 281 | 0 | 300 | 100.0% | 14.3% | 25.1% | 0.0% |
+| RED+YELLOW | 0.0 | 327 | 1 | 28 | 272 | 92.1% | 99.7% | 95.8% | 9.3% |
+| RED | 0.1 | 50 | 278 | 1 | 299 | 98.0% | 15.2% | 26.4% | 0.3% |
+| RED+YELLOW | 0.1 | 327 | 1 | 29 | 271 | 91.9% | 99.7% | 95.6% | 9.7% |
+| RED | 0.2 | 60 | 268 | 1 | 299 | 98.4% | 18.3% | 30.8% | 0.3% |
+| RED+YELLOW | 0.2 | 321 | 7 | 62 | 238 | 83.8% | 97.9% | 90.3% | 20.7% |
+| RED | 0.3 | 63 | 265 | 7 | 293 | 90.0% | 19.2% | 31.7% | 2.3% |
+| RED+YELLOW | 0.3 | 307 | 21 | 160 | 140 | 65.7% | 93.6% | 77.2% | 53.3% |
+
+### Signal ablation (error rate 0.2)
+
+| variant | Top-1 | Top-3 | Partner surfaced |
+|---|---:|---:|---:|
+| edit only | 98.8% | 100.0% | 99.7% |
+| phonetic only | 87.0% | 97.8% | 87.5% |
+| ngram only | 85.2% | 97.5% | 92.4% |
+| fused (0.45/0.35/0.20) | 96.8% | 99.8% | 97.9% |
+
+wrote /Users/tushitkumar/lasa-rx-guard/outputs/reports/lasa_eval.json and /Users/tushitkumar/lasa-rx-guard/outputs/reports/lasa_eval.md
