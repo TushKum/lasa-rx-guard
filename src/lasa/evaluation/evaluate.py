@@ -65,11 +65,19 @@ def eval_crnn_split(model, charset, samples, device, lexicon, limit=None,
         for batch in loader:
             lp = model(batch["images"].to(device)).cpu()
             il = batch["input_lengths"]
-            out["greedy"].extend(greedy_decode(lp, charset, il))
-            out["beam"].extend(beam_search_decode(lp, charset, il, beam_width=beam_width))
+            # Keyword args deliberately: the three decoders order their
+            # optional parameters differently (`beam_width` precedes
+            # `input_lengths`), so passing input_lengths positionally silently
+            # binds it to beam_width.
+            out["greedy"].extend(greedy_decode(lp, charset, input_lengths=il))
+            out["beam"].extend(
+                beam_search_decode(lp, charset, beam_width=beam_width,
+                                   input_lengths=il)
+            )
             out["lexicon"].extend(
-                lexicon_constrained_decode(lp, charset, lexicon, il,
-                                           beam_width=beam_width)
+                lexicon_constrained_decode(lp, charset, lexicon,
+                                           beam_width=beam_width,
+                                           input_lengths=il)
             )
             refs.extend(batch["texts"])
             fonts.extend(batch["fonts"])

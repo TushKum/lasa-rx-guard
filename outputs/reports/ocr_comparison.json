@@ -1,0 +1,531 @@
+{
+  "table": {
+    "CRNN (greedy)": {
+      "test_seen": {
+        "cer": 0.029115341545352745,
+        "wer": 0.1825,
+        "exact_match": 0.8175,
+        "n": 400,
+        "total_ref_chars": 3572,
+        "total_char_errors": 104
+      },
+      "test_unseen_font": {
+        "cer": 0.19446749654218534,
+        "wer": 0.7025,
+        "exact_match": 0.2975,
+        "n": 400,
+        "total_ref_chars": 3615,
+        "total_char_errors": 703
+      },
+      "test_unseen_word": {
+        "cer": 0.02826267664172901,
+        "wer": 0.1975,
+        "exact_match": 0.8025,
+        "n": 400,
+        "total_ref_chars": 3609,
+        "total_char_errors": 102
+      },
+      "test_hard": {
+        "cer": 0.22713200112580917,
+        "wer": 0.7475,
+        "exact_match": 0.2525,
+        "n": 400,
+        "total_ref_chars": 3553,
+        "total_char_errors": 807
+      }
+    },
+    "CRNN (beam)": {
+      "test_seen": {
+        "cer": 0.027995520716685332,
+        "wer": 0.1775,
+        "exact_match": 0.8225,
+        "n": 400,
+        "total_ref_chars": 3572,
+        "total_char_errors": 100
+      },
+      "test_unseen_font": {
+        "cer": 0.1908713692946058,
+        "wer": 0.7025,
+        "exact_match": 0.2975,
+        "n": 400,
+        "total_ref_chars": 3615,
+        "total_char_errors": 690
+      },
+      "test_unseen_word": {
+        "cer": 0.028539761706844,
+        "wer": 0.1975,
+        "exact_match": 0.8025,
+        "n": 400,
+        "total_ref_chars": 3609,
+        "total_char_errors": 103
+      },
+      "test_hard": {
+        "cer": 0.22459893048128343,
+        "wer": 0.745,
+        "exact_match": 0.255,
+        "n": 400,
+        "total_ref_chars": 3553,
+        "total_char_errors": 798
+      }
+    },
+    "CRNN (lexicon)": {
+      "test_seen": {
+        "cer": 0.004759238521836506,
+        "wer": 0.0125,
+        "exact_match": 0.9875,
+        "n": 400,
+        "total_ref_chars": 3572,
+        "total_char_errors": 17
+      },
+      "test_unseen_font": {
+        "cer": 0.05228215767634855,
+        "wer": 0.09,
+        "exact_match": 0.91,
+        "n": 400,
+        "total_ref_chars": 3615,
+        "total_char_errors": 189
+      },
+      "test_unseen_word": {
+        "cer": 0.0008312551953449709,
+        "wer": 0.0025,
+        "exact_match": 0.9975,
+        "n": 400,
+        "total_ref_chars": 3609,
+        "total_char_errors": 3
+      },
+      "test_hard": {
+        "cer": 0.08162116521249649,
+        "wer": 0.13,
+        "exact_match": 0.87,
+        "n": 400,
+        "total_ref_chars": 3553,
+        "total_char_errors": 290
+      }
+    }
+  },
+  "details": {
+    "device": "mps",
+    "splits": [
+      "test_seen",
+      "test_unseen_font",
+      "test_unseen_word",
+      "test_hard"
+    ],
+    "models": {
+      "crnn": {
+        "breakdown": {
+          "test_seen": {
+            "cer_by_font": {
+              "ArchitectsDaughter.ttf": 0.028688524590163935,
+              "BadScript.ttf": 0.0,
+              "Caveat.ttf": 0.058823529411764705,
+              "CaveatBrush.ttf": 0.009433962264150943,
+              "CedarvilleCursive.ttf": 0.03773584905660377,
+              "ComingSoon.ttf": 0.014563106796116505,
+              "CoveredByYourGrace.ttf": 0.015544041450777202,
+              "DancingScript.ttf": 0.07537688442211055,
+              "GloriaHallelujah.ttf": 0.018404907975460124,
+              "Handlee.ttf": 0.02262443438914027,
+              "HomemadeApple.ttf": 0.06923076923076923,
+              "JustAnotherHand.ttf": 0.10416666666666667,
+              "Kalam.ttf": 0.024271844660194174,
+              "LaBelleAurore.ttf": 0.03759398496240601,
+              "MarckScript.ttf": 0.025974025974025976,
+              "NothingYouCouldDo.ttf": 0.0,
+              "PatrickHand.ttf": 0.006172839506172839,
+              "PermanentMarker.ttf": 0.006134969325153374,
+              "RockSalt.ttf": 0.03278688524590164,
+              "ShadowsIntoLight.ttf": 0.022988505747126436
+            },
+            "cer_by_length": {
+              "1-6": 0.0617906683480454,
+              "11-14": 0.02241265655899802,
+              "15+": 0.009708737864077669,
+              "7-10": 0.01725625539257981
+            }
+          },
+          "test_unseen_font": {
+            "cer_by_font": {
+              "IndieFlower.ttf": 0.18624641833810887,
+              "NanumPenScript.ttf": 0.0570430733410943,
+              "ReenieBeanie.ttf": 0.1794478527607362,
+              "Sacramento.ttf": 0.29088277858176553,
+              "Zeyada.ttf": 0.2881118881118881
+            },
+            "cer_by_length": {
+              "1-6": 0.22720897615708274,
+              "11-14": 0.19394329896907217,
+              "15+": 0.20422535211267606,
+              "7-10": 0.17466887417218543
+            }
+          },
+          "test_unseen_word": {
+            "cer_by_font": {
+              "ArchitectsDaughter.ttf": 0.006097560975609756,
+              "BadScript.ttf": 0.04790419161676647,
+              "Caveat.ttf": 0.031914893617021274,
+              "CaveatBrush.ttf": 0.008888888888888889,
+              "CedarvilleCursive.ttf": 0.07547169811320754,
+              "ComingSoon.ttf": 0.03414634146341464,
+              "CoveredByYourGrace.ttf": 0.014705882352941176,
+              "DancingScript.ttf": 0.09090909090909091,
+              "GloriaHallelujah.ttf": 0.014035087719298246,
+              "Handlee.ttf": 0.017045454545454544,
+              "HomemadeApple.ttf": 0.03816793893129771,
+              "JustAnotherHand.ttf": 0.034782608695652174,
+              "Kalam.ttf": 0.01507537688442211,
+              "LaBelleAurore.ttf": 0.04142011834319527,
+              "MarckScript.ttf": 0.029787234042553193,
+              "NothingYouCouldDo.ttf": 0.02702702702702703,
+              "PatrickHand.ttf": 0.0,
+              "PermanentMarker.ttf": 0.03409090909090909,
+              "RockSalt.ttf": 0.014705882352941176,
+              "ShadowsIntoLight.ttf": 0.021621621621621623
+            },
+            "cer_by_length": {
+              "1-6": 0.03346203346203346,
+              "11-14": 0.027636363636363636,
+              "15+": 0.020080321285140562,
+              "7-10": 0.027317880794701987
+            }
+          },
+          "test_hard": {
+            "cer_by_font": {
+              "IndieFlower.ttf": 0.17996870109546165,
+              "NanumPenScript.ttf": 0.045584045584045586,
+              "ReenieBeanie.ttf": 0.23087818696883852,
+              "Sacramento.ttf": 0.37480798771121354,
+              "Zeyada.ttf": 0.295906432748538
+            },
+            "cer_by_length": {
+              "1-6": 0.22625,
+              "11-14": 0.23757309941520469,
+              "15+": 0.1702127659574468,
+              "7-10": 0.22266881028938906
+            }
+          }
+        },
+        "worst": {
+          "test_seen": [
+            {
+              "ref": "hy-kxp",
+              "hyp": "hlv",
+              "dist": 5
+            },
+            {
+              "ref": "bkemv",
+              "hyp": "llueme",
+              "dist": 4
+            },
+            {
+              "ref": "iohexol",
+              "hyp": "lobovol",
+              "dist": 4
+            },
+            {
+              "ref": "menveo",
+              "hyp": "mevvrexe",
+              "dist": 4
+            },
+            {
+              "ref": "ozone",
+              "hyp": "asonee",
+              "dist": 3
+            },
+            {
+              "ref": "pefloxacin",
+              "hyp": "peflosecon",
+              "dist": 3
+            },
+            {
+              "ref": "alaway",
+              "hyp": "alavvay",
+              "dist": 2
+            },
+            {
+              "ref": "bedaquiline",
+              "hyp": "bedaqunine",
+              "dist": 2
+            },
+            {
+              "ref": "benzoxonium",
+              "hyp": "beneoxonum",
+              "dist": 2
+            },
+            {
+              "ref": "carboplatin",
+              "hyp": "arbopatin",
+              "dist": 2
+            },
+            {
+              "ref": "exjade",
+              "hyp": "exjole",
+              "dist": 2
+            },
+            {
+              "ref": "filgrastim",
+              "hyp": "filgravim",
+              "dist": 2
+            },
+            {
+              "ref": "golimumab",
+              "hyp": "solmumab",
+              "dist": 2
+            },
+            {
+              "ref": "menveo",
+              "hyp": "menuea",
+              "dist": 2
+            },
+            {
+              "ref": "narsoplimab",
+              "hyp": "narssolimab",
+              "dist": 2
+            }
+          ],
+          "test_unseen_font": [
+            {
+              "ref": "phenylephrine",
+              "hyp": "robaolrolnine",
+              "dist": 9
+            },
+            {
+              "ref": "plutonium",
+              "hyp": "pruatomsrrana",
+              "dist": 9
+            },
+            {
+              "ref": "guselkumab",
+              "hyp": "qsusriliclumabb",
+              "dist": 8
+            },
+            {
+              "ref": "pseudoephedrine",
+              "hyp": "roeivdserotedrine",
+              "dist": 8
+            },
+            {
+              "ref": "daclatasvir",
+              "hyp": "aloiclotorsvir",
+              "dist": 7
+            },
+            {
+              "ref": "dapagliflozin",
+              "hyp": "coxfillozin",
+              "dist": 7
+            },
+            {
+              "ref": "ertugliflozin",
+              "hyp": "einciflrin",
+              "dist": 7
+            },
+            {
+              "ref": "methylprednisolone",
+              "hyp": "welybredrisoline",
+              "dist": 7
+            },
+            {
+              "ref": "mirdametinib",
+              "hyp": "aisoloamelimnib",
+              "dist": 7
+            },
+            {
+              "ref": "rivaroxaban",
+              "hyp": "rivaretraseair",
+              "dist": 7
+            },
+            {
+              "ref": "talquetamab",
+              "hyp": "cilonsamib",
+              "dist": 7
+            },
+            {
+              "ref": "thiafentanil",
+              "hyp": "zilatemramil",
+              "dist": 7
+            },
+            {
+              "ref": "ceftriaxone",
+              "hyp": "celossoxome",
+              "dist": 6
+            },
+            {
+              "ref": "dexamethasone",
+              "hyp": "lnamipharone",
+              "dist": 6
+            },
+            {
+              "ref": "finafloxacin",
+              "hyp": "fimatlonaston",
+              "dist": 6
+            }
+          ],
+          "test_unseen_word": [
+            {
+              "ref": "nadoxolol",
+              "hyp": "redoxelol",
+              "dist": 3
+            },
+            {
+              "ref": "parnaparin",
+              "hyp": "ponaprarin",
+              "dist": 3
+            },
+            {
+              "ref": "rofecoxib",
+              "hyp": "rofesovir",
+              "dist": 3
+            },
+            {
+              "ref": "azacitidine",
+              "hyp": "aracitiline",
+              "dist": 2
+            },
+            {
+              "ref": "cholecalciferol",
+              "hyp": "clolecalcifenol",
+              "dist": 2
+            },
+            {
+              "ref": "cipro",
+              "hyp": "ciore",
+              "dist": 2
+            },
+            {
+              "ref": "dsuvia",
+              "hyp": "dovvia",
+              "dist": 2
+            },
+            {
+              "ref": "hydroxyzine",
+              "hyp": "hydroxiine",
+              "dist": 2
+            },
+            {
+              "ref": "imjudo",
+              "hyp": "imijudlo",
+              "dist": 2
+            },
+            {
+              "ref": "medrysone",
+              "hyp": "mediyzone",
+              "dist": 2
+            },
+            {
+              "ref": "methdilazine",
+              "hyp": "methalazine",
+              "dist": 2
+            },
+            {
+              "ref": "nattokinase",
+              "hyp": "nartolinase",
+              "dist": 2
+            },
+            {
+              "ref": "pegbovigrastim",
+              "hyp": "pegborgrastim",
+              "dist": 2
+            },
+            {
+              "ref": "pitavastatin",
+              "hyp": "pitovastotin",
+              "dist": 2
+            },
+            {
+              "ref": "protriptyline",
+              "hyp": "prosoiptyline",
+              "dist": 2
+            }
+          ],
+          "test_hard": [
+            {
+              "ref": "daunorubicin",
+              "hyp": "larmisrulbioim",
+              "dist": 8
+            },
+            {
+              "ref": "quinestradol",
+              "hyp": "osamesinasor",
+              "dist": 8
+            },
+            {
+              "ref": "behentrimonium",
+              "hyp": "bilbevrimmium",
+              "dist": 7
+            },
+            {
+              "ref": "burosumab",
+              "hyp": "boscesuaebe",
+              "dist": 7
+            },
+            {
+              "ref": "hexylcaine",
+              "hyp": "hityloisano",
+              "dist": 7
+            },
+            {
+              "ref": "lorlatinib",
+              "hyp": "lesvastrin",
+              "dist": 7
+            },
+            {
+              "ref": "nordazepam",
+              "hyp": "rerdloneprn",
+              "dist": 7
+            },
+            {
+              "ref": "streptodornase",
+              "hyp": "strertadrmrone",
+              "dist": 7
+            },
+            {
+              "ref": "streptodornase",
+              "hyp": "otaitodrnone",
+              "dist": 7
+            },
+            {
+              "ref": "tafasitamab",
+              "hyp": "ryvvisaab",
+              "dist": 7
+            },
+            {
+              "ref": "tertatolol",
+              "hyp": "lrzazinl",
+              "dist": 7
+            },
+            {
+              "ref": "tivozanib",
+              "hyp": "tesril",
+              "dist": 7
+            },
+            {
+              "ref": "ustekinumab",
+              "hyp": "voteleomuma",
+              "dist": 7
+            },
+            {
+              "ref": "butoconazole",
+              "hyp": "litocmezoli",
+              "dist": 6
+            },
+            {
+              "ref": "cholecalciferol",
+              "hyp": "clolacolcilovol",
+              "dist": 6
+            }
+          ]
+        },
+        "params": 8379740,
+        "ckpt_mb": 100.627554,
+        "latency_ms": {
+          "mean": 3.843441331776342,
+          "p95": 6.788825007970444,
+          "device": "mps",
+          "batch_size": 1,
+          "decode": "excluded"
+        },
+        "train_summary": null
+      }
+    }
+  }
+}
