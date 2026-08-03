@@ -1,0 +1,202 @@
+[
+  {
+    "family": "Architects Daughter",
+    "filename": "ArchitectsDaughter.ttf",
+    "source": "google-fonts",
+    "license": "OFL-1.1/Apache-2.0",
+    "sha256": "66143599134dca4f6140e817216358c54c11fe6e28724af156135ad33d4d4343",
+    "portable": true
+  },
+  {
+    "family": "Bad Script",
+    "filename": "BadScript.ttf",
+    "source": "google-fonts",
+    "license": "OFL-1.1/Apache-2.0",
+    "sha256": "6b0be7a3bebff316ea9d07b0118bce55ab14b9ad7af173605616ec33a1375f59",
+    "portable": true
+  },
+  {
+    "family": "Caveat",
+    "filename": "Caveat.ttf",
+    "source": "google-fonts",
+    "license": "OFL-1.1/Apache-2.0",
+    "sha256": "6b1476e1c29f6e0b6eca8d7ade8e311ee035eb06372406974fef79caea510821",
+    "portable": true
+  },
+  {
+    "family": "Caveat Brush",
+    "filename": "CaveatBrush.ttf",
+    "source": "google-fonts",
+    "license": "OFL-1.1/Apache-2.0",
+    "sha256": "7c8072d8882bb5492de4e7540d57fd94304122df239a0cbd2490f62a1e04f5ae",
+    "portable": true
+  },
+  {
+    "family": "Cedarville Cursive",
+    "filename": "CedarvilleCursive.ttf",
+    "source": "google-fonts",
+    "license": "OFL-1.1/Apache-2.0",
+    "sha256": "6dc55e0afff585169914316387cf89822db99fb43fd5c14a25911d1c8f4d919d",
+    "portable": true
+  },
+  {
+    "family": "Coming Soon",
+    "filename": "ComingSoon.ttf",
+    "source": "google-fonts",
+    "license": "OFL-1.1/Apache-2.0",
+    "sha256": "6eb39efb0d3828bd748d2c455f151a4d7b2c174728402543be7efe58864ee8bf",
+    "portable": true
+  },
+  {
+    "family": "Covered By Your Grace",
+    "filename": "CoveredByYourGrace.ttf",
+    "source": "google-fonts",
+    "license": "OFL-1.1/Apache-2.0",
+    "sha256": "c08c09ee4386d28722e7d6d1acdae8a1736712ad4ed80017308233fb0b5e0673",
+    "portable": true
+  },
+  {
+    "family": "Dancing Script",
+    "filename": "DancingScript.ttf",
+    "source": "google-fonts",
+    "license": "OFL-1.1/Apache-2.0",
+    "sha256": "d935f4150d216e0ea4fe82ea666fb25a36bc671e38d726b0b07f666bbea6de7b",
+    "portable": true
+  },
+  {
+    "family": "Gloria Hallelujah",
+    "filename": "GloriaHallelujah.ttf",
+    "source": "google-fonts",
+    "license": "OFL-1.1/Apache-2.0",
+    "sha256": "6d7be6b9ea9d81c362c75e80f3dc4db6929b45a656bc5bdbc6179943a36b67af",
+    "portable": true
+  },
+  {
+    "family": "Handlee",
+    "filename": "Handlee.ttf",
+    "source": "google-fonts",
+    "license": "OFL-1.1/Apache-2.0",
+    "sha256": "22e4f14ff79a2bbf8f762afe1151fb3b960ebcf3c8c32b34812848b4a1a9842f",
+    "portable": true
+  },
+  {
+    "family": "Homemade Apple",
+    "filename": "HomemadeApple.ttf",
+    "source": "google-fonts",
+    "license": "OFL-1.1/Apache-2.0",
+    "sha256": "65e590af67bd743ffbac75782a18080bc0c413f8aac246601a2e0e9a1efe064b",
+    "portable": true
+  },
+  {
+    "family": "Indie Flower",
+    "filename": "IndieFlower.ttf",
+    "source": "google-fonts",
+    "license": "OFL-1.1/Apache-2.0",
+    "sha256": "f16f2a5335ecad26451cbf72881649bc91a847efb18b5750d36f1daad5f0413a",
+    "portable": true
+  },
+  {
+    "family": "Just Another Hand",
+    "filename": "JustAnotherHand.ttf",
+    "source": "google-fonts",
+    "license": "OFL-1.1/Apache-2.0",
+    "sha256": "5e4da25036f318c95fdc4346339f477850f6340d3ced97dff390d097f5b0e128",
+    "portable": true
+  },
+  {
+    "family": "Kalam",
+    "filename": "Kalam.ttf",
+    "source": "google-fonts",
+    "license": "OFL-1.1/Apache-2.0",
+    "sha256": "9420f3724d60d31eb76f37c25ec99c9d73d8d811a7df8ab9f1d2fa5eb2cafc43",
+    "portable": true
+  },
+  {
+    "family": "La Belle Aurore",
+    "filename": "LaBelleAurore.ttf",
+    "source": "google-fonts",
+    "license": "OFL-1.1/Apache-2.0",
+    "sha256": "beca49069f981f6fb49bd39bec23e0820ab9f7468543ca229b77517f3d43d6cb",
+    "portable": true
+  },
+  {
+    "family": "Marck Script",
+    "filename": "MarckScript.ttf",
+    "source": "google-fonts",
+    "license": "OFL-1.1/Apache-2.0",
+    "sha256": "eae245006fe20ba63b67d3417aec64a167fe3113f377ca80e37777cd5377b8a2",
+    "portable": true
+  },
+  {
+    "family": "Nanum Pen Script",
+    "filename": "NanumPenScript.ttf",
+    "source": "google-fonts",
+    "license": "OFL-1.1/Apache-2.0",
+    "sha256": "afc53a6be541014df109e8577f279efbf0d91d9fc644ce54e1d07e33c49aa06f",
+    "portable": true
+  },
+  {
+    "family": "Nothing You Could Do",
+    "filename": "NothingYouCouldDo.ttf",
+    "source": "google-fonts",
+    "license": "OFL-1.1/Apache-2.0",
+    "sha256": "655fb9e4fcf7a8f247303ff871ce99dbba23738b52e6c12d886b7d3096579612",
+    "portable": true
+  },
+  {
+    "family": "Patrick Hand",
+    "filename": "PatrickHand.ttf",
+    "source": "google-fonts",
+    "license": "OFL-1.1/Apache-2.0",
+    "sha256": "794fc7e3693d36b5236446395a553ad403433e092407bf9af0d0d55577d3273c",
+    "portable": true
+  },
+  {
+    "family": "Permanent Marker",
+    "filename": "PermanentMarker.ttf",
+    "source": "google-fonts",
+    "license": "OFL-1.1/Apache-2.0",
+    "sha256": "38d4690a8ea86436312da76ea3f14030a1e36026008a8c3d278a57600ca33a87",
+    "portable": true
+  },
+  {
+    "family": "Reenie Beanie",
+    "filename": "ReenieBeanie.ttf",
+    "source": "google-fonts",
+    "license": "OFL-1.1/Apache-2.0",
+    "sha256": "34269f1f7cdf2cbd664e62cd110b226c3edebe14c24438a0c0e13f374a3def74",
+    "portable": true
+  },
+  {
+    "family": "Rock Salt",
+    "filename": "RockSalt.ttf",
+    "source": "google-fonts",
+    "license": "OFL-1.1/Apache-2.0",
+    "sha256": "ba55ed66b5f1c60c0d2566da8510b6e974da1d6115951954529a2ba16547ece7",
+    "portable": true
+  },
+  {
+    "family": "Sacramento",
+    "filename": "Sacramento.ttf",
+    "source": "google-fonts",
+    "license": "OFL-1.1/Apache-2.0",
+    "sha256": "f4ba2c244462b0ab5e20977f87f6c5347012626bc1b61d2c412a9ac21e964068",
+    "portable": true
+  },
+  {
+    "family": "Shadows Into Light",
+    "filename": "ShadowsIntoLight.ttf",
+    "source": "google-fonts",
+    "license": "OFL-1.1/Apache-2.0",
+    "sha256": "bf76ee862924a63bbccd6281ebdcd78888dd7679564f4b435cdb3da9ae98577f",
+    "portable": true
+  },
+  {
+    "family": "Zeyada",
+    "filename": "Zeyada.ttf",
+    "source": "google-fonts",
+    "license": "OFL-1.1/Apache-2.0",
+    "sha256": "6eb30596057443f15c907ece00d0038d2a2bbd79150299f76f2714a68ff4bc50",
+    "portable": true
+  }
+]

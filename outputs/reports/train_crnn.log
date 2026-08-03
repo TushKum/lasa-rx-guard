@@ -1,0 +1,43 @@
+preloading 48000 images into RAM...
+  10000/48000
+  20000/48000
+  30000/48000
+  40000/48000
+  cached 48000 images (468 MB)
+preloading 3000 images into RAM...
+  cached 3000 images (30 MB)
+device      : mps | CTC on CPU (MPS lacks aten::_ctc_loss)
+charset     : 28 classes -> '-abcdefghijklmnopqrstuvwxyz'
+train/val   : 48000 / 3000
+params      : 8,379,740
+steps/epoch : 375
+
+  e00 step    0/375 loss=12.2802 lr=4.00e-05
+  e00 step  100/375 loss=6.1163 lr=7.36e-05
+  e00 step  200/375 loss=4.6346 lr=1.69e-04
+  e00 step  300/375 loss=4.1064 lr=3.12e-04
+epoch 00 | loss 3.8155 | CER 86.79% | WER 100.00% | Exact  0.00% | n=3000 | 852s | elapsed 14.2m
+  * new best val CER 86.7931% -> outputs/checkpoints/crnn_ctc/best.pt
+  projected total: 213 min for 15 epochs
+  e01 step    0/375 loss=2.1215 lr=4.39e-04
+  e01 step  100/375 loss=1.3998 lr=6.17e-04
+  e01 step  200/375 loss=1.0073 lr=7.82e-04
+  e01 step  300/375 loss=0.8110 lr=9.10e-04
+epoch 01 | loss 0.7103 | CER 11.57% | WER 57.00% | Exact 43.00% | n=3000 | 436s | elapsed 21.5m
+  * new best val CER 11.5659% -> outputs/checkpoints/crnn_ctc/best.pt
+  e02 step    0/375 loss=0.2232 lr=9.72e-04
+  e02 step  100/375 loss=0.2414 lr=1.00e-03
+  e02 step  200/375 loss=0.2296 lr=9.99e-04
+  e02 step  300/375 loss=0.2143 lr=9.95e-04
+epoch 02 | loss 0.2037 | CER  5.74% | WER 34.87% | Exact 65.13% | n=3000 | 398s | elapsed 28.1m
+  * new best val CER 5.7415% -> outputs/checkpoints/crnn_ctc/best.pt
+  e03 step    0/375 loss=0.0847 lr=9.91e-04
+  e03 step  100/375 loss=0.1152 lr=9.84e-04
+  e03 step  200/375 loss=0.1167 lr=9.75e-04
+  e03 step  300/375 loss=0.1151 lr=9.64e-04
+epoch 03 | loss 0.1156 | CER  4.63% | WER 27.87% | Exact 72.13% | n=3000 | 402s | elapsed 34.8m
+  * new best val CER 4.6307% -> outputs/checkpoints/crnn_ctc/best.pt
+  e04 step    0/375 loss=0.1160 lr=9.54e-04
+  e04 step  100/375 loss=0.0778 lr=9.39e-04
+  e04 step  200/375 loss=0.0751 lr=9.23e-04
+  e04 step  300/375 loss=0.0745 lr=9.04e-04

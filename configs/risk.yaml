@@ -1,0 +1,96 @@
+# Stage 2 — LASA confusion risk.
+# Given an OCR hypothesis, retrieve the most plausible intended drug names from
+# the corpus and score how dangerous a mix-up would be. Orthographic similarity
+# alone is not enough: handwriting errors are visual, but prescribing/verbal
+# errors are phonetic, and the ISMP pairs contain plenty of both.
+
+seed: 1337
+
+corpus:
+  config: configs/data.yaml   # scored against the same 2000-name corpus
+  normalise: lower_strip      # casefold + strip; tall-man capitalisation is display-only
+
+candidates:
+  top_k: 5                    # 5 fits a dispensing-screen list without scrolling;
+                              # top-3 accuracy is reported separately
+  # Cheap RapidFuzz prefilter before the expensive fused score. 2000 names is
+  # small enough that this is about latency in the demo, not feasibility.
+  prefilter: true
+  prefilter_limit: 50
+  prefilter_cutoff: 55.0      # 0-100 partial-ratio floor; below this no fused
+                              # score has ever cleared the GREEN band
+  drop_exact_self: true       # the query's own name is not a confusion candidate
+
+# Fused similarity in [0,1]. Weights must sum to 1.0 — the scripts assert it.
+weights:
+  edit: 0.45                  # dominant: OCR confusions are shape/character errors
+  phonetic: 0.35              # catches celebrex/celexa-style sound-alikes that
+                              # edit distance ranks too low
+  ngram: 0.20                 # smallest: character trigrams reward shared stems
+                              # (-azepam, -statin), which are informative but also
+                              # the main source of false positives
+
+edit:
+  # Sub-weights live in their own block so that "sum the weights" is never
+  # ambiguous with the tuning parameters beside them.
+  weights:
+    # Jaro-Winkler leads because it up-weights a shared prefix, and prescribers'
+    # handwriting degrades toward the end of a word far more than at the start.
+    jaro_winkler: 0.6
+    damerau_levenshtein: 0.4  # normalised by max length; catches transpositions
+  jw_prefix_weight: 0.1       # Winkler's p (library default); not a fusion weight
+  case_sensitive: false
+
+phonetic:
+  weights:
+    # Double Metaphone handles the pharmaceutical spelling conventions (ph/f,
+    # x/z, silent h) that Soundex mangles; Soundex is a coarse tiebreaker.
+    double_metaphone: 0.6
+    nysiis: 0.25              # better than Soundex on long, vowel-heavy names
+    soundex: 0.15
+  compare: jaro_winkler       # codes are compared by similarity, not equality —
+                              # exact-match-only is far too brittle at this length
+
+ngram:
+  n: 3
+  analyzer: char_wb           # pads word boundaries, so prefixes/suffixes count
+  weighting: tfidf            # down-weights ubiquitous stems like "chlor"
+  min_df: 1
+  metric: cosine
+
+# Traffic-light bands on the fused score.
+# CALIBRATED against the 164 ground-truth pairs + 200 no-partner controls at
+# 0.2 errors/char (see outputs/reports/lasa_eval.json). The original provisional
+# yellow of 0.62 flagged 36% of unrelated names; 0.78 cuts that to 15.5% with
+# recall unchanged at 97.9% (F1 89.0% -> 94.4%).
+thresholds:
+  red: 0.80                   # block-and-confirm: near-certain confusable match
+  yellow: 0.78                # show the alternative, require an explicit dismissal
+  # anything below `yellow` is GREEN
+
+  # Operating points, both reported rather than one being hidden:
+  #   RED only      ~96% precision, ~18% recall, ~1% false positives
+  #   RED or YELLOW ~91% precision, ~98% recall, ~16% false positives
+  # RED is the block-and-confirm gate; YELLOW is the advisory tier.
+
+escalation:
+  # An error involving an ISMP high-alert drug has a much higher chance of real
+  # harm, so the same similarity buys a stricter band.
+  high_alert_promotes_yellow_to_red: true
+  known_pair_promotes_to_red: true      # the pair is documented ground truth —
+                                        # never soften a published confusion
+  high_alert_threshold_shift: -0.08     # applied to both bands for these names
+
+ocr_gate:
+  # A low-confidence transcription is itself a reason to warn, independent of
+  # similarity — the risk is that the read is wrong, not that the drug is odd.
+  enabled: true
+  min_confidence: 0.55        # mean per-character posterior (CRNN) / sequence
+                              # score (TrOCR), normalised to [0,1]
+  low_confidence_band: yellow
+
+output:
+  show_tall_man: true         # display DOBUTamine/DOPamine — that IS the mitigation
+  explain: true               # emit the per-component scores; an unexplained
+                              # warning gets dismissed reflexively at a counter
+  max_alternatives_shown: 3

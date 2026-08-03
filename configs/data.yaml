@@ -1,0 +1,55 @@
+# Data pipeline: corpus -> fonts -> synthetic word images -> loader geometry.
+# Consumed by lasa.data.* and by both training scripts, so that CRNN and TrOCR
+# provably see the same samples in the same order.
+
+seed: 1337                    # lasa.common.seed.DEFAULT_SEED; change in one place only
+deterministic_torch: true     # costs a little throughput, buys byte-identical reruns
+
+corpus:
+  # 2000 names is the point where the ranked corpus still ends before RxNorm's
+  # long tail of chemical reagents, while covering every ISMP/FDA LASA name.
+  size: 2000
+  use_rxnorm: true            # false = offline build from NLEM + LASA ground truth
+
+fonts:
+  # 25 SIL/OFL handwriting faces. Fewer than ~20 and the held-out-font split is
+  # too small to mean anything; many more and download time dominates setup.
+  expected_count: 25
+  heldout_frac: 0.20          # 5 fonts never seen in training
+
+synth:
+  # 48k train images ~= 24 renders per name across 20 fonts: enough variety that
+  # the CRNN cannot memorise a name's exact pixels, still ~10 min to generate on
+  # 8 workers and small enough to keep in Colab's local disk.
+  n_train: 48000
+  n_val: 3000
+  n_test: 2000                # PER test split; 4 test splits => 8000 test images
+  tier: medium                # clean | medium | hard (lasa.data.augment.TIERS)
+  heldout_font_frac: 0.20
+  heldout_word_frac: 0.10     # 200 names the model never trains on
+  workers: 8                  # local build; drop to 2 on a free Colab VM (2 vCPU)
+  target_height: 64           # stored height; loaders resize again per model
+  splits: [train, val, test_seen, test_unseen_font, test_unseen_word, test_hard]
+
+# Reported separately because they answer different questions: test_seen is the
+# operational number (a pharmacy searches a known formulary), test_unseen_word
+# is the honest character-level generalisation number.
+eval_splits: [test_seen, test_unseen_font, test_unseen_word, test_hard]
+
+image:
+  crnn:
+    height: 32                # standard CRNN input height; 16x pooling -> 2px feature rows
+    max_width: 320            # 80 CTC timesteps after /4 stride; longest corpus
+                              # name is 19 chars, so CTC's 2L+1 requirement is safe
+    downsample: 4             # MUST equal the model's total width stride
+  trocr:
+    image_size: 384           # fixed by the pretrained ViT encoder, not a free knob
+    max_target_length: 32     # BPE tokens; covers "methylprednisolone"-length names
+
+loader:
+  # Free Colab T4 VMs expose only 2 vCPUs, so more workers just thrash. Raise
+  # locally if the GPU is starving.
+  num_workers: 2
+  pin_memory: true
+  persistent_workers: true
+  prefetch_factor: 4

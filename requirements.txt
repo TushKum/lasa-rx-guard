@@ -1,0 +1,41 @@
+# LASA-RxGuard — pinned for reproducibility.
+# NOTE: torch is intentionally unpinned to a CUDA variant so the same file works
+# on Colab T4 (CUDA 12.x wheels preinstalled) and Apple Silicon (MPS).
+
+# --- core DL ---
+torch>=2.2,<2.9
+torchvision>=0.17,<0.24
+transformers>=4.44,<5
+datasets>=2.20,<4
+accelerate>=0.33
+sentencepiece>=0.2.0
+
+# --- imaging / augmentation ---
+pillow>=10.1
+opencv-python-headless>=4.9
+numpy>=1.26,<3
+scipy>=1.11
+
+# --- metrics ---
+jiwer>=3.0
+rapidfuzz>=3.9
+editdistance>=0.8
+
+# --- phonetics + similarity (Stage 2) ---
+jellyfish>=1.0
+Metaphone>=0.6
+scikit-learn>=1.4
+
+# --- demo app ---
+streamlit>=1.36
+
+# --- deployment / export ---
+onnx>=1.16
+onnxruntime>=1.18
+
+# --- utilities ---
+pyyaml>=6.0
+tqdm>=4.66
+pandas>=2.1
+matplotlib>=3.8
+requests>=2.31

@@ -1,0 +1,37 @@
+# --- environment ---
+.venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.DS_Store
+
+# --- generated data ---
+# 408 MB of synthetic images. Deliberately NOT committed: the pipeline is
+# seeded, so `python -m lasa.data.synth` reproduces it byte-for-byte.
+data/synth/
+data/iam/
+data/raw/
+
+# Fonts are fetched from Google Fonts and SHA-256 pinned in the manifest, so
+# the manifest is enough to reproduce them exactly.
+data/fonts/*.ttf
+data/fonts/*.ttc
+!data/fonts/manifest.json
+
+# --- training artefacts ---
+# Full checkpoints are ~96 MB each (weights + AdamW optimizer state), which is
+# at GitHub's 100 MB per-file hard limit. Use scripts/export_weights.py to emit
+# a slim inference-only checkpoint (~32 MB), and attach it to a Release rather
+# than committing it.
+outputs/checkpoints/
+*.pt
+*.onnx
+!outputs/checkpoints/**/charset.json
+!outputs/checkpoints/**/history.json
+
+# --- keep ---
+# The drug corpus and LASA ground truth ARE committed: RxNav is a live service
+# whose output can change, and the exact corpus is what the reported numbers
+# were measured against.
+!data/processed/*.csv

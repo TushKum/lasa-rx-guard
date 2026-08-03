@@ -1,0 +1,81 @@
+# Fine-tuned TrOCR — the pretrained-transformer arm of the comparison.
+# Budget: 334M params at 384x384 is ~30x the CRNN's cost per image, so the fit to
+# a <2h free-T4 slot comes from subsampling the training set and running few
+# epochs, NOT from shrinking the model. Fine-tuning converges fast because the
+# encoder already reads handwriting; only the vocabulary is new.
+
+run_name: trocr_base_ft
+seed: 1337
+deterministic_torch: true
+
+data:
+  config: configs/data.yaml
+  train_split: train
+  val_split: val
+  source: synth
+  # Subsample: a full 48k-image epoch does not fit the budget for a base-sized
+  # model on a T4. Sampling is seeded, so the subset is identical across runs.
+  # NOTE: sized from the parameter count, not from a measured throughput —
+  # re-time the first epoch on the actual T4 and adjust.
+  max_train_samples: 20000
+  max_eval_samples: 1000      # beam-search eval is slow; 1000 is enough to pick a checkpoint
+
+model:
+  name: microsoft/trocr-base-handwritten
+  # Low-VRAM / local Apple-Silicon fallback (~62M params, same API and tokenizer):
+  # name: microsoft/trocr-small-handwritten
+  freeze_encoder: false
+  freeze_encoder_layers: 0    # >0 freezes the first N ViT blocks if VRAM is tight
+  gradient_checkpointing: false  # ~30% slower; enable only on OOM
+  dropout: null               # null = keep the pretrained config's value
+
+optim:
+  name: adamw
+  lr: 5.0e-5                  # standard encoder-decoder fine-tuning LR; 1e-4+ wrecks
+                              # the pretrained decoder's language prior
+  weight_decay: 0.01
+  betas: [0.9, 0.999]
+  eps: 1.0e-8
+  grad_clip: 1.0
+
+schedule:
+  name: linear                # linear | cosine — HF-style decay to zero
+  warmup_ratio: 0.06          # ~1 epoch's worth of warmup at these step counts
+
+train:
+  epochs: 3                   # fine-tuning, not training: the encoder already reads script
+  batch_size: 8               # 384x384 + 334M params in fp16 fits 16GB T4 at 8;
+                              # 16 OOMs once beam-search eval buffers are live
+  grad_accum: 4               # effective batch 32 — enough to stabilise the LM head
+  eval_batch_size: 16         # no optimiser state at eval, so double the batch
+  fp16: true                  # T4 has fp16 tensor cores; bf16 is Ampere+ only
+  num_workers: 2              # free Colab VMs have 2 vCPUs
+  log_every: 50
+  max_minutes: 110            # hard wall-clock stop (planning guard, not measured)
+
+eval:
+  strategy: steps             # epoch-level eval is too coarse at 3 epochs
+  eval_steps: 500
+  metric: cer
+  greater_is_better: false
+  splits: [test_seen, test_unseen_font, test_unseen_word, test_hard]
+  report_per_font: true
+
+generation:
+  # Drug names are short; capping generation keeps beam-search eval affordable.
+  max_length: 24              # BPE tokens incl. BOS/EOS
+  num_beams: 4                # 4 beams noticeably beats greedy on confusable names
+                              # at ~3x eval cost; set 1 for a quick smoke run
+  length_penalty: 1.0
+  early_stopping: true
+  no_repeat_ngram_size: 0     # MUST stay 0 — real names repeat bigrams ("cocaine",
+                              # "acetazolamide"), and blocking them injects errors
+  # decoder_start_token_id / pad_token_id / eos_token_id are read from the
+  # processor's tokenizer at runtime; hard-coding them breaks the small variant.
+
+checkpoint:
+  dir: trocr_base_ft          # subdirectory under outputs/checkpoints/
+  save_best: true
+  save_last: false            # a base checkpoint is ~1.3GB — keep one, not two
+  save_total_limit: 1
+  save_resolved_config: true

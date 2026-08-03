@@ -1,0 +1,84 @@
+# From-scratch CRNN + CTC baseline.
+# Budget: this must train end-to-end in well under 2h on a free Colab T4. The
+# model is ~8M params on 32x320 grayscale crops, so the run is dataloader-bound,
+# not GPU-bound — which is why the batch size is large and the workers few.
+
+run_name: crnn_ctc
+seed: 1337
+deterministic_torch: true
+
+data:
+  config: configs/data.yaml   # geometry + split names come from there; no duplication
+  train_split: train
+  val_split: val
+  source: synth
+
+model:
+  # Classic Shi et al. CRNN stack. Four pooling stages: 2x2, 2x2, (2,1), (2,1),
+  # giving height 32 -> 1 and width /4, hence data.image.crnn.downsample = 4.
+  cnn_channels: [64, 128, 256, 256, 512, 512, 512]
+  batch_norm_after: [4, 5]    # BN only on the deep 512 blocks, as in the paper
+  rnn: lstm
+  hidden: 256                 # 2x256 BiLSTM: enough for a 40-symbol charset,
+                              # small enough that the RNN is not the bottleneck
+  rnn_layers: 2
+  bidirectional: true
+  dropout: 0.25               # on the RNN output only; conv dropout hurt CTC alignment
+  leaky_relu_slope: 0.0       # plain ReLU; slope kept as a knob for ablation
+
+loss:
+  name: ctc
+  zero_infinity: true         # a too-short input length must not NaN the whole batch
+  fp32: true                  # compute CTC outside autocast — fp16 log-probs
+                              # underflow on long targets and silently stall training
+
+optim:
+  name: adamw
+  lr: 1.0e-3                  # OneCycle peak; >3e-3 diverged the CTC alignment
+  weight_decay: 1.0e-4
+  betas: [0.9, 0.98]          # low beta2 as for other CTC/transducer setups
+  eps: 1.0e-8
+  grad_clip: 5.0              # CTC gradients spike early, before alignment settles
+
+schedule:
+  name: onecycle              # onecycle | cosine
+  onecycle:
+    pct_start: 0.15           # ~4 epochs of warmup, then anneal
+    div_factor: 25.0          # start LR = lr/25
+    final_div_factor: 1000.0
+    anneal_strategy: cos
+  cosine:                     # used only when schedule.name == cosine
+    warmup_epochs: 2
+    min_lr: 1.0e-5
+
+train:
+  epochs: 30                  # 48k/128 = 375 steps/epoch -> ~11k steps total
+  batch_size: 128             # 32x320 crops are tiny; T4 memory is not the limit
+  eval_batch_size: 256
+  amp: true                   # fp16 autocast on CUDA only; no-op on MPS/CPU
+  accum_steps: 1
+  log_every: 50
+  max_minutes: 100            # hard wall-clock stop, leaves headroom in the 2h cap
+                              # (planning guard, not a measured runtime)
+
+early_stopping:
+  monitor: val_cer
+  mode: min
+  patience: 6                 # epochs without improvement
+  min_delta: 0.0005           # 0.05pp CER — below this it is run-to-run noise
+
+checkpoint:
+  dir: crnn_ctc               # subdirectory under outputs/checkpoints/
+  save_best: true
+  save_last: true
+  save_resolved_config: true  # dump the resolved YAML next to the weights
+  charset_file: charset.json
+
+decode:
+  method: greedy              # greedy | beam
+  beam_width: 10              # only used when method == beam; ~5x slower
+  collapse_repeats: true
+
+eval:
+  splits: [test_seen, test_unseen_font, test_unseen_word, test_hard]
+  report_per_font: true       # per-font CER exposes which faces break the model
