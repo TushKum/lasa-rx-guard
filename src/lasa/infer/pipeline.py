@@ -25,6 +25,22 @@ from lasa.data.datasets import CRNN_HEIGHT, CRNN_MAX_WIDTH, Charset, make_ctc_co
 from lasa.risk.matcher import LasaMatcher, RiskAssessment
 
 
+def find_crnn_checkpoint() -> Path | None:
+    """Locate a usable CRNN checkpoint, preferring the full training one.
+
+    ``best.pt`` carries optimizer state and is ~96 MB, so it is gitignored;
+    ``crnn_inference.pt`` is the weights-only export (~32 MB) that ships with the
+    repo so a cloud deploy has a working model. Checked in that order because a
+    local training run should win over the committed snapshot.
+    """
+    base = CHECKPOINTS / "crnn_ctc"
+    for name in ("best.pt", "crnn_inference.pt", "last.pt"):
+        p = base / name
+        if p.exists():
+            return p
+    return None
+
+
 def _device(name: str = "auto") -> torch.device:
     if name != "auto":
         return torch.device(name)
@@ -113,10 +129,11 @@ class RxPipeline:
 
     def _load(self, checkpoint: Path | None) -> None:
         if self.backend == "crnn":
-            ckpt = checkpoint or CHECKPOINTS / "crnn_ctc" / "best.pt"
-            if not Path(ckpt).exists():
+            ckpt = checkpoint or find_crnn_checkpoint()
+            if ckpt is None or not Path(ckpt).exists():
                 raise FileNotFoundError(
-                    f"No CRNN checkpoint at {ckpt}. Train one first:\n"
+                    f"No CRNN checkpoint under {CHECKPOINTS / 'crnn_ctc'}. "
+                    f"Train one first:\n"
                     f"  python -m lasa.train.train_crnn\n"
                     f"Refusing to run with random weights — the output would look "
                     f"like a real reading but be meaningless."

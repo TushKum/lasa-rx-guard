@@ -99,7 +99,8 @@ tab_ocr, tab_name, tab_about = st.tabs(
 # ------------------------------------------------------------- image path --
 
 with tab_ocr:
-    crnn_ready = (CHECKPOINTS / "crnn_ctc" / "best.pt").exists()
+    from lasa.infer.pipeline import find_crnn_checkpoint
+    crnn_ready = find_crnn_checkpoint() is not None
     trocr_ready = (CHECKPOINTS / "trocr_ft" / "config.json").exists()
 
     available = [b for b, ok in (("crnn", crnn_ready), ("trocr", trocr_ready)) if ok]
