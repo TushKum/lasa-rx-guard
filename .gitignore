@@ -35,3 +35,8 @@ outputs/checkpoints/
 # whose output can change, and the exact corpus is what the reported numbers
 # were measured against.
 !data/processed/*.csv
+
+# generated deck + demo captures
+outputs/*.pptx
+outputs/*.pdf
+outputs/figures/demo/
