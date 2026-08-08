@@ -1,203 +1,188 @@
 # LASA-RxGuard
 
-Handwritten prescription OCR + look-alike/sound-alike (LASA) drug-confusion risk
-flagging.
-
-Drug names that look or sound alike are a well-documented source of dispensing
-errors — *DOPamine* / *DOBUTamine*, *hydrOXYzine* / *hydrALAZINE*, *Celebrex* /
-*Celexa*. Handwriting makes it worse. This project reads a handwritten drug name
-from a prescription and, before dispensing, flags when the reading is
-dangerously ambiguous.
-
-Two stages:
-
-**Stage 1 — OCR.** A CRNN (CNN + BiLSTM + CTC) trained from scratch, compared
-against a fine-tuned `microsoft/trocr-base-handwritten`. Reported side by side
-on CER, WER and exact-match.
-
-**Stage 2 — LASA risk.** The OCR string is matched against a 2,000-name drug
-database using edit distance, phonetic encoding (Soundex / Metaphone / Double
-Metaphone) and character n-gram TF-IDF cosine similarity. Returns the top-3
-candidates plus a RED / YELLOW / GREEN flag, validated against published
-ISMP/FDA confused-drug-name pairs.
-
-> **This is a hackathon prototype, not a validated medical device.** It has not
-> been clinically evaluated and must not be used for real dispensing decisions.
-> The intended role is advisory, with a pharmacist making the final call.
+**Reads messy doctor handwriting, then warns the pharmacist when two medicines have dangerously similar names.**
 
 ---
 
-## Quickstart
+## The simple version
+
+Some medicines have names that look almost the same.
+
+> **DOPamine** and **DOBUTamine**
+> **Celebrex** and **Celexa**
+> **Losec** and **Lasix**
+
+They are *completely different drugs*. Giving someone the wrong one can seriously hurt them.
+
+Now imagine that name is written by hand, in a hurry, on a small piece of paper. The pharmacist has a few seconds to decide which one it says.
+
+**That is the problem this project tries to help with.**
+
+### How it works, in two steps
+
+**Step 1 — Read the handwriting.**
+A computer program looks at the photo of the written word and guesses the letters. It gets about 97 out of every 100 letters right.
+
+**Step 2 — Check if it is dangerous.**
+The program compares its guess against a list of 2,000 real medicine names, three different ways:
+
+- Is it **spelled** almost the same?
+- Does it **sound** almost the same when you say it out loud?
+- Do the **letter patterns** look similar?
+
+Then it shows a traffic light:
+
+| | What it means |
+|---|---|
+| 🔴 **RED** | Stop. Two dangerous look-alike medicines both match. Check before giving it out. |
+| 🟡 **YELLOW** | Careful. There is another medicine it could be. |
+| 🟢 **GREEN** | Looks clear. Only one medicine matches. |
+
+And it always explains *why* in normal words — not just a score. A warning nobody understands is a warning everybody ignores.
+
+### One important thing
+
+**This is a student project, not a real medical tool.** It has never been tested in a real pharmacy. A real pharmacist must always make the final decision. It is meant to *help* a human, never to replace one.
+
+---
+
+## Try it yourself
 
 ```bash
-git clone <this-repo> && cd lasa-rx-guard
-uv venv --python 3.12 .venv && uv pip install --python .venv/bin/python -r requirements.txt
+git clone https://github.com/TushKum/lasa-rx-guard && cd lasa-rx-guard
+uv venv --python 3.12 .venv
+uv pip install --python .venv/bin/python -r requirements.txt
 uv pip install --python .venv/bin/python -e . --no-deps
+.venv/bin/python -m streamlit run app/streamlit_app.py
 ```
 
-> On Apple Silicon, make sure the venv uses a **native arm64** interpreter. An
-> Anaconda `python3` is often x86_64 under Rosetta, which cannot install
-> `onnxruntime` and disables MPS. Check with
-> `.venv/bin/python -c "import sysconfig; print(sysconfig.get_platform())"` —
-> you want `macosx-11.0-arm64`, not `macosx-10.16-x86_64`.
+Open the **"Type a drug name"** tab and try typing these, one at a time:
 
-Build the data, then train:
+| Type this | You should see |
+|---|---|
+| `dobutamin` | 🔴 RED — because DOPamine is a known dangerous twin |
+| `losec` | 🟡 YELLOW — because Lasix sounds almost identical |
+| `paracetamol` | 🟢 GREEN — nothing else is close |
+| `xyzzyqqq` | 🟡 YELLOW — "I don't know what this is", never a green light |
 
-```bash
-python -m lasa.data.drug_names --size 2000   # RxNorm + NLEM + LASA ground truth
-python -m lasa.data.fonts                    # 25 OFL handwriting fonts
-python -m lasa.data.synth --preview          # eyeball the samples first
-python -m lasa.data.synth                    # full dataset
-python -m lasa.train.train_crnn --config configs/crnn.yaml
-python -m lasa.train.train_trocr --config configs/trocr.yaml
-python -m lasa.evaluation.evaluate
-python -m lasa.risk.evaluate_lasa --markdown
-```
+That last one matters. If the program is confused, it says so. It never pretends.
 
-Or run the whole thing: `scripts/run_all.sh` (add `--smoke` for a fast pass).
-
-Demo app:
-
-```bash
-streamlit run app/streamlit_app.py
-```
-
-For the free-Colab-T4 path, use `notebooks/colab_train.ipynb`.
+> On Apple Silicon, make sure your venv uses a **native arm64** Python. Anaconda's is often x86_64 under Rosetta, which can't install `onnxruntime` and disables MPS.
+> Check: `.venv/bin/python -c "import sysconfig; print(sysconfig.get_platform())"` → you want `macosx-11.0-arm64`.
 
 ---
 
-## Data
+## What it scored
+
+**Reading handwriting** — character error rate, lower is better:
+
+| Test | Result | What it tells you |
+|---|---|---|
+| Familiar words + handwriting | 2.91% | Everyday accuracy |
+| **Words it had never seen** | **2.83%** | It genuinely learned to read, not memorise |
+| **Handwriting it had never seen** | **19.45%** | New handwriting styles are the weak point |
+| Picking from the known medicine list | **0.48%** | 98.75% of whole names exactly right |
+
+**The main finding:** new *words* cost almost nothing. New *handwriting* costs nearly 7× more error. So to improve this, collect more **handwriting styles**, not more medicine names.
+
+**Spotting dangerous pairs:**
+
+| | |
+|---|---|
+| Catches known dangerous pairs | **97.9%** |
+| Correct when it warns | **91.2%** |
+| False alarms | **15.5%** |
+
+The false-alarm number was originally **36%** — one prescription in three. That is how safety systems fail in real life: when most alerts are noise, staff learn to ignore all of them, including the real ones. Retuning cut it to 15.5% **without missing any more dangerous pairs**.
+
+---
+
+## Honest limitations
+
+- **All the handwriting is computer-generated.** Real doctors' handwriting is messier, and the results above would likely be worse on it. This is the biggest weakness.
+- **The second model didn't finish training.** A larger model (TrOCR) ran out of computing power. It is reported as a failed run, not as "our model won".
+- **The dangerous-pairs list is a subset** — 164 pairs from published ISMP/FDA safety lists, not the complete official table.
+- **Never clinically tested.** Not a medical device.
+
+---
+
+## Technical detail
+
+<details>
+<summary><strong>Architecture, data provenance, method</strong> — click to expand</summary>
+
+### Stage 1 — OCR
+A CRNN (CNN + BiLSTM + CTC), 8,379,740 parameters, trained from scratch, compared against a fine-tuned `microsoft/trocr-base-handwritten`. Reported on CER, WER and exact-match.
+
+### Stage 2 — LASA risk
+Fuses edit distance (0.45), phonetic encoding — Soundex / Metaphone / Double Metaphone (0.35), and character n-gram TF-IDF cosine (0.20). Weights in `configs/risk.yaml`, ablated in `docs/results.md`.
+
+Documented partners of the top match are **force-injected** into the candidate list even when similarity misses them. Candidates carry a `via` field so retrieval and pair-surfacing are reported separately rather than merged.
+
+### Data
 
 | Asset | Count | Source |
 |---|---|---|
-| Drug names | 2,000 | RxNorm `IN` + `BN` via the RxNav REST API, filtered; NLEM India 2022; LASA ground-truth names |
-| LASA pairs | 164 unique | ISMP "List of Confused Drug Names" + FDA/ISMP tall-man lettering list |
-| Handwriting fonts | 25 | Google Fonts, all OFL-1.1 / Apache-2.0 |
-| Real handwriting | IAM | HuggingFace `Teklia/IAM-line` (public, ungated) |
+| Drug names | 2,000 | RxNorm `IN`+`BN` via RxNav; NLEM India 2022 |
+| LASA pairs | 164 | ISMP Confused Drug Names; FDA/ISMP tall-man list |
+| Fonts | 25 | Google Fonts, OFL-1.1 / Apache-2.0, SHA-256 pinned |
+| Synthetic images | 59,000 | Generated, seeded |
+| Real handwriting | 22,506 words | `Teklia/IAM-line`, 69.1% of lines discarded on alignment |
 
-**Drug-name filtering.** Raw RxNorm `IN` contains ~14.6k concepts, most of which
-are IUPAC chemical strings and allergenic extracts rather than anything a
-prescriber writes. `lasa/data/drug_names.py` keeps only drug-shaped tokens and
-then ranks by LASA-ground-truth membership → NLEM → recognised INN stem
-(`-olol`, `-pril`, `-statin`, …) → everything else. All 272 distinct names that
-appear in the LASA pair list are guaranteed present, because a Stage-2 score
-against a database that is missing the ground truth would be meaningless.
+Raw RxNorm `IN` contains ~14.6k concepts, mostly IUPAC strings and allergenic extracts. `lasa/data/drug_names.py` keeps drug-shaped tokens, then ranks by LASA-ground-truth membership → NLEM → INN stem → remainder. All 272 ground-truth names are guaranteed present; a Stage-2 score against a database missing the ground truth would be meaningless.
 
-**LASA pair provenance.** `lasa/data/lasa_pairs.py` is a hand-curated subset of
-publicly published ISMP/FDA pairs, not a verbatim copy of ISMP's full table. To
-use the official list, download it and run
-`python scripts/ingest_ismp.py --csv <file>`; everything downstream reads the
-merged CSV, so the evaluation improves automatically. **Any results table must
-state which source was used.**
+The LASA pair list is a curated subset of published ISMP/FDA material. To use the official list: `python scripts/ingest_ismp.py --csv <file>`. Results must state which source was used.
 
-**IAM word segmentation.** `Teklia/IAM-line` is line-level, so word crops are
-inferred from whitespace gaps. A line only contributes samples when the number
-of detected crops exactly matches the number of transcript tokens — otherwise
-the alignment is a guess and would inject label noise. The discard rate is
-recorded in `data/iam/meta.json`. If you have the registration-gated official
-`words.tgz`, pass `--local-words-dir` to use its ground-truth segmentation
-instead.
+### Synthesis
+Realism comes from **per-glyph** jitter, not the font: independent baseline wobble, rotation, scale and spacing, sinusoidal drift, and explicit cursive connectors. Degradation models the imaging path — paper texture, uneven illumination, ruled lines, ink pressure, shear, elastic distortion, motion blur, sensor noise, JPEG artefacts. Three tiers scale handwriting messiness and imaging degradation together.
 
-### Synthetic handwriting
+A **legibility guard** rejects and redraws any sample whose ink-to-paper contrast falls below threshold. Without it, aggressive augmentation silently produces samples no human can read — mislabelled data that caps achievable CER and teaches the model to guess from word length.
 
-IAM has real handwriting but essentially no medicine names; the drug corpus has
-the right vocabulary but no images. `lasa/data/synth.py` bridges the gap.
-
-Realism comes from **per-glyph** jitter, not from the font. Setting a whole
-string in a handwriting font still yields uniform letterforms on a straight
-baseline, which a CNN learns to exploit. Each glyph gets independent baseline
-wobble, rotation, scale and spacing, plus a slow sinusoidal baseline drift and
-explicit cursive connecting strokes across the word. Degradation
-(`lasa/data/augment.py`) then models the imaging path: paper stock and fibre
-texture, uneven illumination, ruled lines, ink pressure and skipping, shear,
-elastic distortion, motion blur, sensor noise, JPEG artefacts.
-
-Three tiers — `clean`, `medium` (default), `hard` — scale both the handwriting
-messiness and the imaging degradation together.
-
-A **legibility guard** rejects draws whose ink-to-paper contrast falls below a
-threshold and redraws them. Without it, aggressive augmentation silently
-produces samples no human could read, which is mislabelled data rather than
-difficulty: it puts a floor on achievable CER and teaches the model to guess
-from word length.
-
-### Splits are deliberately adversarial
+### Splits
 
 | Split | Words | Fonts | Measures |
 |---|---|---|---|
 | `train` / `val` | train | train | — |
-| `test_seen` | train | train | operational accuracy on a known formulary |
+| `test_seen` | train | train | operational accuracy |
 | `test_unseen_font` | train | **held out** | robustness to an unfamiliar hand |
-| `test_unseen_word` | **held out** | train | genuine character-level generalisation |
-| `test_hard` | **held out** | **held out** | both at once |
+| `test_unseen_word` | **held out** | train | character-level generalisation |
+| `test_hard` | **held out** | **held out** | both |
 
-`test_seen` is the number that matters operationally, since a real pharmacy
-searches a fixed formulary. `test_unseen_word` is the honest measure of whether
-the model learned to read rather than to memorise. Reporting only one of them
-would be misleading, so `results.md` reports all four.
+### Reproducibility
+Every entrypoint calls `set_seed` (default 1337); DataLoader workers seeded via `worker_init_fn`. Augmentation is baked into stored files, so CRNN and TrOCR train on byte-identical inputs — any difference is the model, not the data. Fonts SHA-256 pinned. Resolved config written beside every checkpoint.
 
----
-
-## Stage 2: how the risk flag is decided
-
-Three similarity signals are fused (weights in `configs/risk.yaml`):
-
-1. **Edit distance** — catches visual/typographic confusion.
-2. **Phonetic** — Soundex, Metaphone, Double Metaphone. Catches verbal-order
-   confusion, which is how many real LASA errors happen.
-3. **Character n-gram TF-IDF cosine** — robust to OCR noise, and handles
-   out-of-vocabulary strings (OCR output frequently is not a real word).
-
-| Flag | Meaning |
-|---|---|
-| 🔴 **RED** | The top match has a known ISMP/FDA confusable scoring close behind it, or the top-2 are a known pair within the margin, or a high-alert drug is involved in the ambiguity. |
-| 🟡 **YELLOW** | Top-2 are close but not a documented pair, or overall confidence is low. |
-| 🟢 **GREEN** | One clear match, no known confusable nearby. |
-
-`reasons` are plain clinical language, not bare scores — a pharmacist has to act
-on the output.
-
-Stage 2 is evaluated on top-1/3/5 retrieval under a seeded OCR-like noise model,
-precision/recall/F1 for pair flagging, a **negative control** (unrelated names
-must not be flagged — without it, a matcher that flags everything would score
-perfect recall), and an ablation of each signal against the fusion.
-
----
-
-## Reproducibility
-
-- Every entrypoint calls `lasa.common.seed.set_seed` (default `1337`); DataLoader
-  workers are seeded via `worker_init_fn`.
-- Augmentation is **baked into the stored image files**, not applied on the fly,
-  so CRNN and TrOCR train on byte-identical inputs. Any difference between them
-  is the model, not the data.
-- Font downloads are SHA-256 pinned in `data/fonts/manifest.json`. Default fonts
-  are all Google Fonts and therefore identical on Colab; the optional
-  `--include-system` macOS fonts are marked non-portable and would break that
-  guarantee.
-- The resolved config is written next to every checkpoint.
-
-## Layout
-
+### Layout
 ```
-configs/            YAML for data, CRNN, TrOCR, risk thresholds
+configs/     YAML for data, CRNN, TrOCR, risk thresholds
 src/lasa/
-  common/           seeding, paths, config loading
-  data/             drug corpus, LASA pairs, fonts, synthesis, augmentation,
-                    IAM loader, torch datasets + CTC/TrOCR collates
-  models/           CRNN (+ greedy / beam / lexicon-constrained decoding), TrOCR
-  train/            train_crnn.py, train_trocr.py
-  evaluation/       CER/WER/exact metrics, side-by-side comparison harness
-  risk/             phonetics, n-gram index, LASA matcher, Stage-2 evaluation
-  infer/            end-to-end image → OCR → risk pipeline
-app/                Streamlit demo
-notebooks/          Colab T4 training notebook
-docs/               results.md, deployment.md
+  common/    seeding, paths, config
+  data/      corpus, LASA pairs, fonts, synthesis, augmentation, IAM, datasets
+  models/    CRNN (greedy / beam / lexicon decoding), TrOCR
+  train/     train_crnn.py, train_trocr.py
+  evaluation/ metrics, comparison harness
+  risk/      phonetics, n-gram index, matcher, Stage-2 evaluation
+  infer/     image → OCR → risk pipeline
+app/         Streamlit demo
+notebooks/   Colab + Kaggle training notebooks
+scripts/     run_all.sh, export_weights.py, capture_demo.py, build_deck.js
+docs/        results.md, deployment.md
 ```
+
+</details>
+
+---
+
+## Run the whole thing
+
+```bash
+./scripts/run_all.sh          # full pipeline (hours, needs a GPU for TrOCR)
+./scripts/run_all.sh --smoke  # tiny sizes, minutes, proves the wiring
+```
+
+On a free GPU: `notebooks/colab_train.ipynb` or `notebooks/kaggle_train.ipynb`. Both work whether this repo is public or private.
+
+Tests: `.venv/bin/python -m pytest tests/ -q` — 26 regression tests, each pinning a bug that raised no exception.
 
 ## Licence / attribution
 
-Fonts are OFL-1.1 / Apache-2.0 (see `data/fonts/manifest.json`). RxNorm is a
-product of the U.S. National Library of Medicine. LASA pairs are derived from
-publicly published ISMP and FDA safety references; ISMP's full list is
-redistributed under their own terms and is not bundled here.
+Fonts are OFL-1.1 / Apache-2.0 (`data/fonts/manifest.json`). RxNorm is a product of the U.S. National Library of Medicine. LASA pairs derive from publicly published ISMP and FDA safety references; ISMP's full list is redistributed under their own terms and is not bundled here.
