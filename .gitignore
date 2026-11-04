@@ -40,3 +40,6 @@ outputs/checkpoints/
 outputs/*.pptx
 outputs/*.pdf
 outputs/figures/demo/
+
+# downloaded papers - read locally, not ours to redistribute
+docs/papers/
