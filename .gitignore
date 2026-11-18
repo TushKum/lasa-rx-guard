@@ -43,3 +43,12 @@ outputs/figures/demo/
 
 # downloaded papers - read locally, not ours to redistribute
 docs/papers/
+
+# arXiv package is generated from paper/ -- rebuild, do not hand-edit
+lasa-rx-guard-arxiv.tar.gz
+arxiv/
+paper/main.aux
+paper/main.bbl
+paper/main.blg
+paper/main.log
+paper/main.out
