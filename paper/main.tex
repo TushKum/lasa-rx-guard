@@ -452,7 +452,49 @@ genuine prescriber handwriting is unmeasured and is the largest single source of
 uncertainty in these results. Section~\ref{sec:results} shows it is
 substantial: unseen \emph{fonts} already cost $7.4\times$, and real prescribers
 sit further from the training distribution than any held-out font. Generative
-handwriting synthesis~\cite{fogel2020scrabblegan} is the most promising route.
+handwriting synthesis~\cite{fogel2020scrabblegan} would widen the style
+distribution, but it cannot substitute for a measurement against real hands.
+
+\textbf{Closing the gap: a specified collection protocol.} Because this
+limitation dominates, we have specified and instrumented the study
+that resolves it rather than leaving it as an aspiration.
+
+The design decision that makes it tractable is to \emph{not} photograph patient
+prescriptions. Prescribers instead copy printed drug names onto a structured
+form. This removes protected health information from the study entirely, and --
+more importantly for measurement -- makes the ground-truth label exact.
+Photographing a real prescription requires inferring which drug was written,
+which is precisely the task under evaluation; the resulting labels would be
+circular and noisy. The construction follows IAM~\cite{marti2002iam}, whose
+writers likewise copied prompts from a corpus. The limitation it introduces is
+that copied handwriting is not composed handwriting, so the resulting figures
+should be read as an optimistic bound.
+
+Each A4 sheet carries 22 write-in cells and four ArUco fiducials, so a
+hand-held phone photograph rectifies automatically and collection can happen in
+a clinic corridor rather than at a scanner. Cell geometry is stored normalised
+to the fiducial rectangle, making ingestion independent of print resolution and
+camera distance. Prompts over-sample documented ISMP/FDA confusable names, since
+those are the safety-critical reads. Ingestion emits the same manifest schema as
+the synthetic pipeline, and assigns splits \emph{by writer} -- a
+writer-dependent split would inflate results exactly where
+Section~\ref{sec:results} shows the model is weakest.
+
+We validated the toolchain by round trip before any field use: forms were
+filled with synthesised handwriting, degraded to simulate a phone photograph
+(perspective warp, uneven illumination, sensor noise, JPEG), and ingested. All
+six sheets rectified and all 132 cells recovered with correct labels. The
+exercise surfaced two defects that would have cost field data silently --
+fiducials placed close enough to the page edge to be clipped at modest camera
+angles, and a blank-cell threshold that discarded short words written with a
+fine pen. Both are fixed and pinned by regression tests.
+
+At a realistic 30--50 prescribers and two sheets each, the yield is on the order
+of $1.3\times10^{3}$ samples. That is far too small to train from scratch, and
+we do not propose it as a training corpus: its value is as a \emph{test} set
+that measures the domain gap honestly, and secondarily for fine-tuning. Both
+numbers should be reported, since quoting only the fine-tuned figure conceals
+the quantity of interest.
 
 \textbf{Other limitations.} The ground-truth pair list is a curated subset of
 published ISMP/FDA material, not the complete official table; recall against the
@@ -476,9 +518,10 @@ published literature we surveyed. Stage~1 reaches 2.61\% CER on seen conditions 
 confusable pairs at its advisory operating point. The two findings we consider
 most useful are negative: handwriting \emph{style}, not vocabulary, is the
 binding constraint on recognition, and our three-signal fusion is not justified
-by an evaluation whose noise model is orthographically biased. Future work
-should prioritise real prescriber handwriting over model capacity, and a
-verbal-error corpus capable of testing the phonetic channel honestly.
+by an evaluation whose noise model is orthographically biased. Future work should prioritise real prescriber handwriting over model capacity;
+a collection protocol and its tooling are specified and validated for that
+purpose, awaiting ethics approval. A verbal-error corpus is additionally needed
+before the phonetic channel can be tested honestly.
 
 \section*{Reproducibility}
 Code, the drug corpus, the pair list and all evaluation scripts are available at
