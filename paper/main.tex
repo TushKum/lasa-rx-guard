@@ -36,11 +36,11 @@ recognised string against a 2{,}000-name formulary by fusing edit distance,
 phonetic encoding and character $n$-gram similarity, and emits a top-3 candidate
 list with a three-level risk flag validated against 164 published ISMP/FDA
 confusable pairs. On a test split sharing vocabulary and writing style with
-training, Stage~1 reaches 2.91\% character error rate (CER), falling to 0.48\%
+training, Stage~1 reaches 2.61\% CER (95\% CI [2.33, 2.90]), falling to 0.18\%
 under lexicon-constrained decoding. We report two negative results that the
 evaluation does not support suppressing. First, held-out \emph{vocabulary} costs
-almost nothing (2.83\% CER) while held-out \emph{writing style} costs
-$6.7\times$ more (19.45\%), indicating that style diversity, not lexicon size,
+nothing measurable (+0.40\,pp, 95\% CI [-0.02, +0.81]) while held-out \emph{writing style} costs
+$7.4\times$ more (19.29\%), indicating that style diversity, not lexicon size,
 is the binding constraint. Second, under our visually-biased noise model,
 edit distance alone outperforms the three-signal fusion on every metric
 measured, so the fusion is not justified by this evaluation. A fine-tuned
@@ -298,6 +298,8 @@ substitutions (e.g.\ $a\!\leftrightarrow\!o$, $m\!\leftrightarrow\!n$,
 $i\!\leftrightarrow\!l$) with deletion, insertion and transposition.
 Hardware: Apple M2 (MPS backend).
 
+Confidence intervals are obtained by bootstrap over \emph{samples} (5000 resamples), recomputing the corpus-level micro-average on each draw so the interval describes the quantity actually reported. Between-split differences are unpaired, since splits contain disjoint samples; we treat an interval containing zero as failing to establish a difference.
+
 \section{Results}\label{sec:results}
 
 \subsection{Stage 1}
@@ -305,48 +307,39 @@ Table~\ref{tab:stage1} reports all four splits and three decoders, $n=400$ per
 split, from the epoch-5 checkpoint.
 
 \begin{table}[t]
-\caption{Stage-1 recognition ($n=400$ per split; split names omit the
-\texttt{test\_} prefix). CER/WER lower is better; EM higher is better.}
+\caption{Stage-1 recognition with 95\% bootstrap confidence intervals
+($n=2000$ per split, 5000 resamples; split names omit the \texttt{test\_}
+prefix). CER lower is better; EM higher is better.}
 \label{tab:stage1}
 \centering
 \footnotesize
-\begin{tabular}{@{}llrrr@{}}
+\setlength{\tabcolsep}{3.5pt}
+\begin{tabular}{@{}llcc@{}}
 \toprule
-Decoder & Split & CER & WER & EM \\
+Decoder & Split & CER \% (95\% CI) & EM \% (95\% CI) \\
 \midrule
-\multirow{1}{*}{Greedy}
- & \texttt{seen}        & 2.91\%  & 18.25\% & 81.75\% \\
- & \texttt{unseen\_font} & 19.45\% & 70.25\% & 29.75\% \\
- & \texttt{unseen\_word} & 2.83\%  & 19.75\% & 80.25\% \\
- & \texttt{hard}        & 22.71\% & 74.75\% & 25.25\% \\
-\midrule
-Beam ($k$=8)
- & \texttt{seen}        & 2.80\%  & 17.75\% & 82.25\% \\
- & \texttt{unseen\_font} & 19.09\% & 70.25\% & 29.75\% \\
- & \texttt{unseen\_word} & 2.85\%  & 19.75\% & 80.25\% \\
- & \texttt{hard}        & 22.46\% & 74.50\% & 25.50\% \\
+Greedy
+ & \texttt{seen} & 2.61 [2.33, 2.90] & 82.35 [80.70, 84.00] \\
+ & \texttt{unseen\_font} & 19.29 [18.46, 20.19] & 29.45 [27.45, 31.55] \\
+ & \texttt{unseen\_word} & 3.00 [2.71, 3.32] & 79.90 [78.15, 81.65] \\
+ & \texttt{hard} & 21.52 [20.71, 22.37] & 24.50 [22.60, 26.45] \\
 \midrule
 Lexicon
- & \texttt{seen}        & \textbf{0.48\%} & 1.25\%  & \textbf{98.75\%} \\
- & \texttt{unseen\_font} & 5.23\%  & 9.00\%  & 91.00\% \\
- & \texttt{unseen\_word} & \textbf{0.08\%} & 0.25\%  & \textbf{99.75\%} \\
- & \texttt{hard}        & 8.16\%  & 13.00\% & 87.00\% \\
+ & \texttt{seen} & 0.18 [0.08, 0.31] & 99.50 [99.15, 99.80] \\
+ & \texttt{unseen\_font} & 6.35 [5.49, 7.30] & 89.15 [87.75, 90.45] \\
+ & \texttt{unseen\_word} & 0.16 [0.04, 0.31] & 99.70 [99.45, 99.90] \\
+ & \texttt{hard} & 6.77 [5.90, 7.67] & 88.15 [86.75, 89.55] \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-Three observations. First, \texttt{test\_unseen\_word} (2.83\%) is
-indistinguishable from \texttt{test\_seen} (2.91\%), while
-\texttt{test\_unseen\_font} is $6.7\times$ worse: the model learned to read
-characters, and \emph{style}, not vocabulary, is the binding constraint.
-Second, beam search buys 0.11\,pp of CER for roughly $26\times$ the decode cost
-(measured: $<$1\,ms greedy vs 177\,ms beam-10 at batch 32), so greedy is the
-correct deployment default. Third, lexicon constraint is transformative but is a
-different task.
+Three observations. First, holding out \emph{vocabulary} costs nothing measurable: the difference between \texttt{test\_unseen\_word} and \texttt{test\_seen} is +0.40\,pp (95\% CI [-0.02, +0.81]), a confidence interval that includes zero. Holding out \emph{writing style} costs +16.68\,pp (95\% CI [+15.77, +17.60]), and holding out both costs +18.91\,pp (95\% CI [+18.03, +19.79]); neither interval approaches zero. The model therefore learned to read characters, and style is the binding constraint at $7.4\times$ the error rate.
 
-Error also varies with name length: CER on \texttt{test\_seen} is 6.18\% for
-names of 1--6 characters but 0.97\% for names of 15+, since longer names carry
-more redundancy for the decoder to exploit.
+Second, beam search is not worth its cost: on a 400-sample subset, $k=8$ beam search changed CER by less than $0.2$\,pp on every split while costing roughly $26\times$ more decode time ($<$1\,ms greedy vs 177\,ms beam-10 at batch 32). We therefore report greedy as the deployment default and omit beam from Table~\ref{tab:stage1}.
+
+Third, lexicon constraint is transformative but is a different task, and is never merged into free-decoding CER.
+
+Error also varies with name length, but not monotonically. Greedy CER on \texttt{test\_seen} is 4.47\% for names of 1--6 characters, falls to 1.76\% at 7--10, and rises again to 3.77\% at 15+. Short names lack the redundancy a sequence decoder exploits, while very long names accumulate more opportunities to err; the optimum sits in between. This matters for the safety case: short brand names are both the hardest to read and heavily represented among documented confusable pairs.
 
 \subsection{Transformer baseline (failed run)}
 We attempted to fine-tune TrOCR~\cite{li2023trocr} as a comparison arm. Within
@@ -456,8 +449,8 @@ deployment optimising only for this noise model should use edit distance alone.
 
 \textbf{All handwriting is synthetic.} The gap between degraded font renders and
 genuine prescriber handwriting is unmeasured and is the largest single source of
-uncertainty in these results. Section~\ref{sec:results} suggests it is
-substantial: unseen \emph{fonts} already cost $6.7\times$, and real prescribers
+uncertainty in these results. Section~\ref{sec:results} shows it is
+substantial: unseen \emph{fonts} already cost $7.4\times$, and real prescribers
 sit further from the training distribution than any held-out font. Generative
 handwriting synthesis~\cite{fogel2020scrabblegan} is the most promising route.
 
@@ -479,8 +472,7 @@ advisory, with a qualified pharmacist making every final decision.
 \section{Conclusion}
 We presented a two-stage system coupling handwritten drug-name recognition with
 explicit look-alike/sound-alike risk flagging, a pairing absent from the
-published literature we surveyed. Stage~1 reaches 2.91\% CER on seen conditions
-and 0.48\% under lexicon constraint; Stage~2 surfaces 97.87\% of documented
+published literature we surveyed. Stage~1 reaches 2.61\% CER on seen conditions and 0.18\% under lexicon constraint; Stage~2 surfaces 97.87\% of documented
 confusable pairs at its advisory operating point. The two findings we consider
 most useful are negative: handwriting \emph{style}, not vocabulary, is the
 binding constraint on recognition, and our three-signal fusion is not justified

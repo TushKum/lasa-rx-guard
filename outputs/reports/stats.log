@@ -1,0 +1,11 @@
+test_seen          n=2000  greedy CER 0.0261 [0.0233, 0.0290]  lexicon CER 0.0018 [0.0008, 0.0031]
+test_unseen_font   n=2000  greedy CER 0.1929 [0.1846, 0.2019]  lexicon CER 0.0635 [0.0549, 0.0730]
+test_unseen_word   n=2000  greedy CER 0.0300 [0.0271, 0.0332]  lexicon CER 0.0016 [0.0004, 0.0031]
+test_hard          n=2000  greedy CER 0.2152 [0.2071, 0.2237]  lexicon CER 0.0677 [0.0590, 0.0767]
+
+Differences in greedy CER (positive = second split worse):
+  test_unseen_font   delta=+0.1668  95% CI [+0.1577, +0.1760]  significant
+  test_unseen_word   delta=+0.0040  95% CI [-0.0002, +0.0081]  NOT significant (CI includes 0)
+  test_hard          delta=+0.1891  95% CI [+0.1803, +0.1979]  significant
+
+wrote /Users/tushitkumar/lasa-rx-guard/outputs/reports/stage1_ci.json and stage1_predictions.json
