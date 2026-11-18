@@ -52,3 +52,8 @@ paper/main.bbl
 paper/main.blg
 paper/main.log
 paper/main.out
+
+# generated forms and collected real data
+data/forms/*.png
+data/real/
+!data/forms/forms_manifest.json
